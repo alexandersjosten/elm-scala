@@ -1,0 +1,7 @@
+* Plan
+  - Make AST classes
+  - Export to javascript using the Elm runtime js.
+  - Make our own elm runtime.
+
+* links
+  - https://github.com/tiarkrompf/scala-virtualized/wiki

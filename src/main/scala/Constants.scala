@@ -29,7 +29,7 @@ Elm.Main.make = function (_elm) {
    var Time = Elm.Time.make(_elm);
 """
 
-  val ElmFooter = """return _elm.Main.values;
+  val ElmFooter = """   return _elm.Main.values;
 };</script></head><body><script type="text/javascript">Elm.fullscreen(Elm.Main)</script><noscript></noscript></body></html>
 """
 

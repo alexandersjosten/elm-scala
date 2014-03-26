@@ -1,12 +1,14 @@
 package elm
 
+import Text._
+import java.io.File
+
 object Main {
   def main(args : Array[String]) {
     println("Initial")
 
     object Example extends Elm {
-      var a = 1
-      var b = 2
+      var a = plainText("Hej")
     }
 
     val progStr = Example.prog.emit

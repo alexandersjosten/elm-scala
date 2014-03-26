@@ -3,10 +3,12 @@ package elm
 // Expression AST stuff
 sealed abstract class Expression {
   override def toString() = Expression.stringVal(this)
+  def apply(e : Expression) : Expression = AppE(this, e)
 }
 
 case class UnitE() extends Expression
 case class NumE(n : Int) extends Expression
+case class StringE(s : String) extends Expression
 case class VarE(v : String) extends Expression
 case class LambdaE(v : String, t : Type, e : Expression) extends Expression
 case class AppE(e1 : Expression, e2 : Expression) extends Expression
@@ -16,10 +18,14 @@ case class InputSignalE(i : Int) extends Expression
 case class LiftE(e : Expression, es : List[Expression]) extends Expression
 case class FoldpE(e1 : Expression, e2 : Expression, e3 : Expression) extends Expression
 case class AsyncE(e : Expression) extends Expression  // Will not be supported..
+case class BuiltInE(s : String) extends Expression
 
 object Expression {
   implicit def stringVal(e : Expression) : String = e match {
     case NumE(n) => n.toString
+    case StringE(s) => "\"" + s + "\""
+    case BuiltInE(s) => s
+    case AppE(e1, e2) => e1 + "(" + e2 + ")"
   }
 }
 

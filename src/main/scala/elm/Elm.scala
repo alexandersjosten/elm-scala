@@ -56,4 +56,5 @@ class Elm {
   val prog : Program = new Program()
   def __newVar[T](expr : Expression) : Int = prog.addExpr(expr)
   implicit def intToExp(i : Int) : Expression = NumE(i)
+  implicit def stringToExp(s : String) : Expression = StringE(s)
 }

@@ -3,8 +3,9 @@ package elm
 object Constants {
 
   val ElmHeader = """<!DOCTYPE HTML>
-<html><head><meta charset="UTF-8"><title>test</title><script type="text/javascript" src="http://tunna.org/elm-runtime.js"></script><script type="text/javascript">Elm.Main = Elm.Main || {};
+<html><head><meta charset="UTF-8"><title>test</title><script type="text/javascript" src="http://elm-lang.org/elm-runtime.js"></script><script type="text/javascript">Elm.Main = Elm.Main || {};
 Elm.Main.make = function (_elm) {
+   "use strict";
    _elm.Main = _elm.Main || {};
    if (_elm.Main.values)
    return _elm.Main.values;
@@ -24,7 +25,6 @@ Elm.Main.make = function (_elm) {
    var Maybe = Elm.Maybe.make(_elm);
    var Native = Native || {};
    Native.Ports = Elm.Native.Ports.make(_elm);
-   var Prelude = Elm.Prelude.make(_elm);
    var Signal = Elm.Signal.make(_elm);
    var String = Elm.String.make(_elm);
    var Text = Elm.Text.make(_elm);

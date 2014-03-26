@@ -13,9 +13,7 @@ object Main {
 
     val progStr = Example.prog.emit
 
-    printToFile(new File("elmtest.html"))(p =>
-      p.println(progStr)
-    )
+    printToFile(new File("target/elmtest.html"))(_.println(progStr))
     println(progStr)
   }
 

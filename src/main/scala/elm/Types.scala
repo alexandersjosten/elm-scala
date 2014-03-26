@@ -1,3 +1,5 @@
+package elm
+
 // Expression AST stuff
 sealed abstract class Expression {
   override def toString() = Expression.stringVal(this)

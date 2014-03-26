@@ -1,3 +1,5 @@
+package elm
+
 object Constants {
 
   val ElmHeader = """<!DOCTYPE HTML>

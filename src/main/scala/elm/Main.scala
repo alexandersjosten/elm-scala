@@ -9,6 +9,16 @@ object Main {
       var b = 2
     }
 
-    println(Example.prog.emit)
+    val progStr = Example.prog.emit
+
+    printToFile(new File("elmtest.html"))(p =>
+      p.println(progStr)
+    )
+    println(progStr)
+  }
+
+  def printToFile(f: java.io.File)(op: java.io.PrintWriter => Unit) {
+    val p = new java.io.PrintWriter(f)
+    try { op(p) } finally { p.close() }
   }
 }

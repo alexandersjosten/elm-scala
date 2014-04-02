@@ -3,7 +3,7 @@ package elm
 object Constants {
 
   val ElmHeader = """<!DOCTYPE HTML>
-<html><head><meta charset="UTF-8"><title>test</title><script type="text/javascript" src="http://elm-lang.org/elm-runtime.js"></script><script type="text/javascript">Elm.Main = Elm.Main || {};
+<html><head><meta charset="UTF-8"><title>test</title><script type="text/javascript" src="http://tunna.org/elm-runtime.js"></script><script type="text/javascript">Elm.Main = Elm.Main || {};
 Elm.Main.make = function (_elm) {
    "use strict";
    _elm.Main = _elm.Main || {};

@@ -23,6 +23,7 @@ Elm.Main.make = function (_elm) {
    Graphics.Element = Elm.Graphics.Element.make(_elm);
    var List = Elm.List.make(_elm);
    var Maybe = Elm.Maybe.make(_elm);
+   var Mouse = Elm.Mouse.make(_elm);
    var Native = Native || {};
    Native.Ports = Elm.Native.Ports.make(_elm);
    var Signal = Elm.Signal.make(_elm);

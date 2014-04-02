@@ -1,14 +1,14 @@
 package elm
 
 import Text._
+import Prelude._
 import java.io.File
 
 object Main {
-  def main(args : Array[String]) {
-    println("Initial")
 
+  def main(args : Array[String]) {
     object Example extends Elm {
-      var a = plainText("Hej")
+      var a = lift(asText, Mouse.x)
     }
 
     val progStr = Example.prog.emit

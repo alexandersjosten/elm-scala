@@ -3,7 +3,7 @@ package elm
 // Expression AST stuff
 sealed abstract class Expression {
   override def toString() = Expression.stringVal(this)
-  def apply(e : Expression) : Expression = AppE(this, e)
+  def apply(es : Expression*) : Expression = AppE(this, es.toList)
 }
 
 case class UnitE() extends Expression
@@ -11,7 +11,7 @@ case class NumE(n : Int) extends Expression
 case class StringE(s : String) extends Expression
 case class VarE(v : String) extends Expression
 case class LambdaE(v : String, t : Type, e : Expression) extends Expression
-case class AppE(e1 : Expression, e2 : Expression) extends Expression
+case class AppE(e : Expression, es: List[Expression]) extends Expression
 case class BinOpE(b : BinOp, e1 : Expression, e2 : Expression) extends Expression
 case class IfE(e1 : Expression, e2 : Expression, e3 : Expression) extends Expression
 case class InputSignalE(i : Int) extends Expression
@@ -25,7 +25,11 @@ object Expression {
     case NumE(n) => n.toString
     case StringE(s) => "\"" + s + "\""
     case BuiltInE(s) => s
-    case AppE(e1, e2) => e1 + "(" + e2 + ")"
+    case AppE(e, es) => es match {
+      case Nil       => throw new RuntimeException("panic! (the 'impossible' happened)")
+      case e2 :: Nil => e + "(" + e2 + ")"
+      case xs        => "A" + xs.size + "(" + e + ", " + xs.mkString(", ") + ")"
+    }
   }
 }
 

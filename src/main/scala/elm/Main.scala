@@ -8,7 +8,9 @@ object Main {
 
   def main(args : Array[String]) {
     object Example extends Elm {
-      var a = lift(asText, Mouse.x)
+      var a = (x: Expression) => x
+      var b = (x: Expression) => x
+      var main = lift(asText, a(b(Mouse.x)))
     }
 
     val progStr = Example.prog.emit

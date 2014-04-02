@@ -5,12 +5,13 @@ import scala.collection.mutable.StringBuilder
 
 class Program {
   private var mapping : Map[Int, Expression] = Map[Int, Expression]()
-  private var id : Int = -1
+  private var varId: Int = -1
+  private var lamId: Int = -1
 
   def addExpr(expr : Expression) : Expression = {
-    id += 1
+    val id = getVar
     mapping += id -> expr
-    return VarE(getName(id))
+    VarE(getName(id))
   }
 
   def emit : String = {
@@ -30,8 +31,12 @@ class Program {
       case ImportS(_, _) => ()
     }
     str ++= "};\n" + Constants.ElmFooter
-    return str.toString
+    str.toString
   }
+
+  def getVar: Int = { varId += 1; varId }
+
+  def getLam: String = { lamId += 1; "lam_" + lamId }
 
   private def indent(depth : Int, s : String) : String =
     " " * depth + s
@@ -48,15 +53,26 @@ class Program {
 
     stmts += InitS("main", mapping.last._2)
 
-    return stmts.toList
+    stmts.toList
   }
 
-  private def getName(id: Int): String = "x" + id
+  private def getName(id: Int): String = "x_" + id
+
 }
 
 class Elm {
   val prog : Program = new Program()
+
   def __newVar[T](expr : Expression) : Expression = prog.addExpr(expr)
+  def __newVar[T](fun : Expression => Expression) : Expression = {
+    val id   = prog.getLam
+    val x    = VarE(id)
+    val body = fun(x)
+    val expr = LambdaE(id, SimpleT(UnitT()), body)
+
+    prog.addExpr(expr)
+  }
+
   implicit def intToExp(i : Int) : Expression = NumE(i)
   implicit def stringToExp(s : String) : Expression = StringE(s)
 }

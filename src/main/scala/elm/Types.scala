@@ -22,14 +22,16 @@ case class BuiltInE(s : String) extends Expression
 
 object Expression {
   implicit def stringVal(e : Expression) : String = e match {
-    case NumE(n) => n.toString
-    case StringE(s) => "\"" + s + "\""
-    case BuiltInE(s) => s
-    case AppE(e, es) => es match {
+    case NumE(n)             => n.toString
+    case StringE(s)          => "\"" + s + "\""
+    case VarE(s)             => s
+    case LambdaE(var_, t, e) => "function (" + var_ + ") { return " + e + "; }"
+    case AppE(e, es)         => es match {
       case Nil       => throw new RuntimeException("panic! (the 'impossible' happened)")
       case e2 :: Nil => e + "(" + e2 + ")"
       case xs        => "A" + xs.size + "(" + e + ", " + xs.mkString(", ") + ")"
     }
+    case BuiltInE(s)         => s
   }
 }
 

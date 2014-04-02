@@ -7,24 +7,24 @@ class Program {
   private var mapping : Map[Int, Expression] = Map[Int, Expression]()
   private var id : Int = -1
 
-  def addExpr(expr : Expression) : Int = {
+  def addExpr(expr : Expression) : Expression = {
     id += 1
     mapping += id -> expr
-    return id
+    return VarE(getName(id))
   }
 
   def emit : String = {
     val str = new StringBuilder
     str ++= Constants.ElmHeader
     str ++= indent(3, "var _op = {};\n")
-    
+
     val prog = genProgram
-    
+
     prog.foreach { str ++= indent(3, _) }
 
     str ++= indent(3, "_elm.Main.values = {_op: _op")
 
-    prog.foreach { 
+    prog.foreach {
       case InitS(n, _) =>
         str ++= "\n" + indent(22, "," + n + ": " + n)
       case ImportS(_, _) => ()
@@ -33,7 +33,7 @@ class Program {
     return str.toString
   }
 
-  private def indent(depth : Int, s : String) : String = 
+  private def indent(depth : Int, s : String) : String =
     " " * depth + s
 
   private def genProgram : List[Statement] = {
@@ -42,7 +42,7 @@ class Program {
 
     program.foreach {
       case (n, expr) =>
-        val name = "x" + n
+        val name = getName(n)
         stmts += InitS(name, expr)
     }
 
@@ -50,11 +50,13 @@ class Program {
 
     return stmts.toList
   }
+
+  private def getName(id: Int): String = "x" + id
 }
 
 class Elm {
   val prog : Program = new Program()
-  def __newVar[T](expr : Expression) : Int = prog.addExpr(expr)
+  def __newVar[T](expr : Expression) : Expression = prog.addExpr(expr)
   implicit def intToExp(i : Int) : Expression = NumE(i)
   implicit def stringToExp(s : String) : Expression = StringE(s)
 }

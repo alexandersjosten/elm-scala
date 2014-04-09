@@ -1,10 +1,11 @@
 package elm
 
 import scala.util.parsing.combinator._
-import scala.collection.mutable.MutableList
+import token._
 
 object ElmParser extends RegexParsers {
 
+  def EOF = "\\Z".r
   override val skipWhitespace = false
 
   val ident: Parser[String] = "[a-z][A-Za-z0-9_]*".r
@@ -17,7 +18,6 @@ object ElmParser extends RegexParsers {
   }
   val functionName: Parser[FunDef] = {
     val fun = lexeme(ident) ^^ (n => FunDef(n, SimpleT(UnitT())))
-
     fun <~ "[ ]*:[^\n]*\n".r
   }
   
@@ -34,12 +34,21 @@ object ElmParser extends RegexParsers {
   }
 
   val elmModule: Parser[ElmModule] = {
+    val commentModule = comments ~> moduleName
+    val commentImport = comments ~> repsep(importStmt, comments)
+    val commentFunction = comments ~> repsep(functionName, comments)
 
-    //comments ~> (repsep(importStmt, comments) ^^ (is => new ElmModule("apa", is, List())))
-    comments ~> (repsep(functionName, comments) ^^ (fs => new ElmModule("apa", List(), fs)))
-    //comments ~> moduleName ~> comments ~> (repsep(importName, comments) ^^ (is => new ElmModule("apa", is, List())))
+    
+    (commentModule ~ commentImport ~ commentFunction) <~ EOF ^^ {
+      case ~(~(name, imports), funs) => ElmModule(name, imports, funs)
+    }
+    
+    //commentImport ^^ (is => new ElmModule("apa", is, List()))
+    //comments ~> (repsep(functionName, comments) ^^ (fs => new ElmModule("apa", List(), fs)))
 
     //comments ~> (moduleName ^^ (n => new ElmModule(n, List(), List())))
+    
+
   }
 
   // lexeme, parse all trailing whitespaces and tabs

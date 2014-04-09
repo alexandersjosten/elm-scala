@@ -12,10 +12,14 @@ object ElmParser extends RegexParsers {
   val moduleName: Parser[Name]  =
     lexeme("module") ~> lexeme(moduleIdent) <~ lexeme("where") <~ "\n"
   val importStmt: Parser[Import] = {
-    val stmt = (lexeme(moduleIdent) ^^ (n => Import(n, List())))
+    val stmt = lexeme(moduleIdent) ^^ (n => Import(n, List()))
     lexeme("import") ~> stmt <~ lexeme("\n")
   }
-  val functionName: Parser[Name] = lexeme(ident) <~ "[ ]*:[^\n]*\n".r
+  val functionName: Parser[FunDef] = {
+    val fun = lexeme(ident) ^^ (n => FunDef(n, SimpleT(UnitT())))
+
+    fun <~ "[ ]*:[^\n]*\n".r
+  }
   
   val comments: Parser[Unit] = {
     lazy val f: Parser[Unit] = { ("-}" | "(?s).".r ~> f) ~> success(Unit) }
@@ -30,12 +34,9 @@ object ElmParser extends RegexParsers {
   }
 
   val elmModule: Parser[ElmModule] = {
-    var mName: Name = ""
-    var iNames = MutableList[Name]()
-    var fDefs: List[FunDef] = List()
 
-    comments ~> (repsep(importStmt, comments) ^^ (is => new ElmModule("apa", is, List())))
-
+    //comments ~> (repsep(importStmt, comments) ^^ (is => new ElmModule("apa", is, List())))
+    comments ~> (repsep(functionName, comments) ^^ (fs => new ElmModule("apa", List(), fs)))
     //comments ~> moduleName ~> comments ~> (repsep(importName, comments) ^^ (is => new ElmModule("apa", is, List())))
 
     //comments ~> (moduleName ^^ (n => new ElmModule(n, List(), List())))

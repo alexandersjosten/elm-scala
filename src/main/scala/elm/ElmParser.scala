@@ -1,6 +1,7 @@
 package elm
 
 import scala.util.parsing.combinator._
+import scala.collection.mutable.MutableList
 
 object ElmParser extends RegexParsers {
 
@@ -10,9 +11,12 @@ object ElmParser extends RegexParsers {
   val moduleIdent: Parser[Name] = rep1sep("[A-Z][A-Za-z0-9.]*".r, ".") ^^ (_ mkString ".")
   val moduleName: Parser[Name]  =
     lexeme("module") ~> lexeme(moduleIdent) <~ lexeme("where") <~ "\n"
-  val importName: Parser[Name] = lexeme("import") ~> lexeme(moduleIdent) <~ "\n"
+  val importStmt: Parser[Import] = {
+    val stmt = (lexeme(moduleIdent) ^^ (n => Import(n, List())))
+    lexeme("import") ~> stmt <~ lexeme("\n")
+  }
   val functionName: Parser[Name] = lexeme(ident) <~ "[ ]*:[^\n]*\n".r
-
+  
   val comments: Parser[Unit] = {
     lazy val f: Parser[Unit] = { ("-}" | "(?s).".r ~> f) ~> success(Unit) }
 
@@ -20,26 +24,31 @@ object ElmParser extends RegexParsers {
     val sc: Parser[Unit] = "--[^\n]*".r ~> success(Unit)
 
     rep (sc | mc) >> {
-      case Nil    => success(Unit)
-      case _ :: _ => "\n" ~> success(Unit)
+      case Nil    => "[\n]*".r ~> success(Unit)
+      case _ :: _ => "[\n]+".r ~> success(Unit)
     }
   }
 
   val elmModule: Parser[ElmModule] = {
-    comments ~> (moduleName ^^ (n => new ElmModule(n, List(), List())))
+    var mName: Name = ""
+    var iNames = MutableList[Name]()
+    var fDefs: List[FunDef] = List()
+
+    comments ~> (repsep(importStmt, comments) ^^ (is => new ElmModule("apa", is, List())))
+
+    //comments ~> moduleName ~> comments ~> (repsep(importName, comments) ^^ (is => new ElmModule("apa", is, List())))
+
+    //comments ~> (moduleName ^^ (n => new ElmModule(n, List(), List())))
   }
 
   // lexeme, parse all trailing whitespaces and tabs
   def lexeme[T](p: Parser[T]): Parser[T] = p <~ "[ \t]*".r
 
   def parseElm(s: String): ParseResult[ElmModule] = parse(elmModule, s)
-
   type Name = String
 
-  sealed class Import(s: Name, open: Boolean)
-  sealed class FunDef(s: Name, ty: Type)
-
-  sealed class ElmModule(name: Name, imports: List[Import], 
-                         functions: List[FunDef])
-
+  sealed case class Import(s: Name, fns: List[Name])
+  sealed case class FunDef(s: Name, ty: Type)
+  sealed case class ElmModule(name: Name, imports: List[Import],
+                              functions: List[FunDef])
 }

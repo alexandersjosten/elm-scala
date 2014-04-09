@@ -7,9 +7,11 @@ object ElmParser extends RegexParsers {
   override val skipWhitespace = false
 
   val ident: Parser[String] = "[a-z][A-Za-z0-9_]*".r
-  val moduleIdent: Parser[Name] = "[A-Z][A-Za-z0-9.]*".r
+  val moduleIdent: Parser[Name] = rep1sep("[A-Z][A-Za-z0-9.]*".r, ".") ^^ (_ mkString ".")
   val moduleName: Parser[Name]  =
-    "module " ~> (rep1sep(moduleIdent, ".") ^^ (_ mkString ".")) <~ " where"
+    lexeme("module") ~> lexeme(moduleIdent) <~ lexeme("where") <~ "\n"
+  val importName: Parser[Name] = lexeme("import") ~> lexeme(moduleIdent) <~ "\n"
+  val functionName: Parser[Name] = lexeme(ident) <~ "[ ]*:[^\n]*\n".r
 
   val comments: Parser[Unit] = {
     lazy val f: Parser[Unit] = { ("-}" | "(?s).".r ~> f) ~> success(Unit) }
@@ -24,18 +26,20 @@ object ElmParser extends RegexParsers {
   }
 
   val elmModule: Parser[ElmModule] = {
-    val name = comments ~> moduleName
-
-    comments ~> (name ^^ (n => (n, List(), List())))
+    comments ~> (moduleName ^^ (n => new ElmModule(n, List(), List())))
   }
 
-  def parseElm(s: String) = parse(elmModule, s)
+  // lexeme, parse all trailing whitespaces and tabs
+  def lexeme[T](p: Parser[T]): Parser[T] = p <~ "[ \t]*".r
+
+  def parseElm(s: String): ParseResult[ElmModule] = parse(elmModule, s)
 
   type Name = String
 
   sealed class Import(s: Name, open: Boolean)
   sealed class FunDef(s: Name, ty: Type)
 
-  type ElmModule = (Name, List[Import], List[FunDef])
+  sealed class ElmModule(name: Name, imports: List[Import], 
+                         functions: List[FunDef])
 
 }

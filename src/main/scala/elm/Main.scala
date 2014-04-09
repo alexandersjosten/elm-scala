@@ -6,7 +6,7 @@ import java.io.File
 
 object Main {
 
-  def main(args : Array[String]) {
+  def main(args: Array[String]) {
     object Example extends Elm {
       var a = (x: Expression) => x
       var b = (x: Expression) => x

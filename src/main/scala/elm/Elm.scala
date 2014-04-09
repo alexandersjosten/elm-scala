@@ -4,17 +4,17 @@ import scala.collection.mutable.MutableList
 import scala.collection.mutable.StringBuilder
 
 class Program {
-  private var mapping : Map[Int, Expression] = Map[Int, Expression]()
+  private var mapping: Map[Int, Expression] = Map[Int, Expression]()
   private var varId: Int = -1
   private var lamId: Int = -1
 
-  def addExpr(expr : Expression) : Expression = {
+  def addExpr(expr: Expression): Expression = {
     val id = getVar
     mapping += id -> expr
     VarE(getName(id))
   }
 
-  def emit : String = {
+  def emit: String = {
     val str = new StringBuilder
     str ++= Constants.ElmHeader
     str ++= indent(3, "var _op = {};\n")
@@ -38,10 +38,10 @@ class Program {
 
   def getLam: String = { lamId += 1; "lam_" + lamId }
 
-  private def indent(depth : Int, s : String) : String =
+  private def indent(depth: Int, s: String): String =
     " " * depth + s
 
-  private def genProgram : List[Statement] = {
+  private def genProgram: List[Statement] = {
     val stmts = MutableList[Statement]()
     val program = mapping.init
 
@@ -61,10 +61,10 @@ class Program {
 }
 
 class Elm {
-  val prog : Program = new Program()
+  val prog: Program = new Program()
 
-  def __newVar[T](expr : Expression) : Expression = prog.addExpr(expr)
-  def __newVar[T](fun : Expression => Expression) : Expression = {
+  def __newVar[T](expr: Expression): Expression = prog.addExpr(expr)
+  def __newVar[T](fun: Expression => Expression): Expression = {
     val id   = prog.getLam
     val x    = VarE(id)
     val body = fun(x)
@@ -73,6 +73,6 @@ class Elm {
     prog.addExpr(expr)
   }
 
-  implicit def intToExp(i : Int) : Expression = NumE(i)
-  implicit def stringToExp(s : String) : Expression = StringE(s)
+  implicit def intToExp(i: Int): Expression = NumE(i)
+  implicit def stringToExp(s: String): Expression = StringE(s)
 }

@@ -36,11 +36,23 @@ object Expression {
 }
 
 // Binary operators for type Expression
-sealed abstract class BinOp
+sealed abstract class BinOp {
+  override def toString() = BinOp.stringVal(this)
+}
+
 case class AddB() extends BinOp
 case class SubB() extends BinOp
 case class MulB() extends BinOp
 case class DivB() extends BinOp
+
+object BinOp {
+  implicit def stringVal(op: BinOp): String = op match {
+    case AddB() => "+"
+    case SubB() => "-"
+    case MulB() => "*"
+    case DivB() => "/"
+  }
+}
 
 // SimpleType AST stuff
 sealed abstract class SimpleType

@@ -8,7 +8,7 @@ object Main {
 
   def main(args: Array[String]) {
     object Example extends Elm {
-      var a = (x: Expression[Int]) => x + 1
+      var a = (x: Expr[Int]) => x + 1
       var main = lift(a, Mouse.x)
     }
 

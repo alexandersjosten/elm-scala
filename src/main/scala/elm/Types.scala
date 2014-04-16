@@ -10,30 +10,30 @@ object Variable {
   implicit def stringVal[A](v: Variable[A]): String = v.name
 }
 
-// Expression AST stuff
-sealed abstract class Expression[+T] {
-  override def toString() = Expression.stringVal(this)
+// Expr AST stuff
+sealed abstract class Expr[+T] {
+  override def toString() = Expr.stringVal(this)
 }
 
-case class UnitE() extends Expression[Unit]
-case class NumE(n: Int) extends Expression[Int]
-case class StringE(s: String) extends Expression[String]
-case class VarE[T](v: Variable[T]) extends Expression[T]
-case class LambdaE[T1, T2](v: Variable[T1], e: Expression[T2])
-    extends Expression[T1 => T2]
-case class AppE1[T1, T2](e1: Expression[T1 => T2], e2: Expression[T1])
-    extends Expression[T2]
-case class AppE2[T1, T2, T3](e1: Expression[(T1, T2) => T3], e2: Expression[T1],
-                             e3: Expression[T2]) extends Expression[T3]
-case class BinOpE(op: BinOp, e1: Expression[Int], e2: Expression[Int])
-    extends Expression[Int]
-case class InputSignalE[T](i: Int) extends Expression[Signal[T]]
-case class LiftE1[T1, T2](e1: Expression[T1 => Signal[T2]], e2: Expression[T1])
-    extends Expression[Signal[T2]]
-case class BuiltInE[T](v: Variable[T]) extends Expression[T]
+case class UnitE() extends Expr[Unit]
+case class NumE(n: Int) extends Expr[Int]
+case class StringE(s: String) extends Expr[String]
+case class VarE[T](v: Variable[T]) extends Expr[T]
+case class LambdaE[T1, T2](v: Variable[T1], e: Expr[T2])
+    extends Expr[T1 => T2]
+case class AppE1[T1, T2](e1: Expr[T1 => T2], e2: Expr[T1])
+    extends Expr[T2]
+case class AppE2[T1, T2, T3](e1: Expr[(T1, T2) => T3], e2: Expr[T1],
+                             e3: Expr[T2]) extends Expr[T3]
+case class BinOpE(op: BinOp, e1: Expr[Int], e2: Expr[Int])
+    extends Expr[Int]
+case class InputSignalE[T](i: Int) extends Expr[Signal[T]]
+case class LiftE1[T1, T2](e1: Expr[T1 => Signal[T2]], e2: Expr[T1])
+    extends Expr[Signal[T2]]
+case class BuiltInE[T](v: Variable[T]) extends Expr[T]
 
-object Expression {
-  implicit def stringVal[A](e: Expression[A]): String = e match {
+object Expr {
+  implicit def stringVal[A](e: Expr[A]): String = e match {
     case UnitE()            => "()"
     case NumE(n)            => n.toString
     case StringE(s)         => "\"" + s + "\""
@@ -45,24 +45,24 @@ object Expression {
     case BuiltInE(v)        => v.toString
   }
 
-  private def appE[A](e: Expression[A], es: Expression[Any]*) = {
+  private def appE[A](e: Expr[A], es: Expr[Any]*) = {
     "A" + es.size + "(" + e + ", " + es.mkString(", ") + ")"
   }
 
-  implicit def expToFunc2[A,B,C](f: Expression[(A,B) => C]): Func2[A, B, C] = Func2(f)
+  implicit def expToFunc2[A,B,C](f: Expr[(A,B) => C]): Func2[A, B, C] = Func2(f)
 
-  implicit def expToFunc1[A,B](f: Expression[A => B]): Func1[A, B] = Func1(f)
+  implicit def expToFunc1[A,B](f: Expr[A => B]): Func1[A, B] = Func1(f)
 }
 
-sealed case class Func1[A, B](expr: Expression[A => B]) {
-  def apply(a: Expression[A]): Expression[B] = AppE1(expr, a)
+sealed case class Func1[A, B](expr: Expr[A => B]) {
+  def apply(a: Expr[A]): Expr[B] = AppE1(expr, a)
 }
 
-sealed case class Func2[A, B, C](expr: Expression[(A, B) => C]) {
-  def apply(a: Expression[A], b: Expression[B]): Expression[C] = AppE2(expr, a, b)
+sealed case class Func2[A, B, C](expr: Expr[(A, B) => C]) {
+  def apply(a: Expr[A], b: Expr[B]): Expr[C] = AppE2(expr, a, b)
 }
 
-// Binary operators for type Expression
+// Binary operators for type Expr
 sealed abstract class BinOp {
   override def toString() = BinOp.stringVal(this)
 }
@@ -114,7 +114,7 @@ case class SimpleT[T](t: SimpleType[T]) extends Type[T]
 
 // Statement AST stuff
 sealed abstract class Statement
-case class InitS(id: String, e: Expression[_]) extends Statement
+case class InitS(id: String, e: Expr[_]) extends Statement
 case class ImportS(path: String, open: Boolean = false) extends Statement
 
 object Statement {

@@ -4,11 +4,11 @@ import scala.collection.mutable.MutableList
 import scala.collection.mutable.StringBuilder
 
 class Program {
-  private var mapping: Map[Int, Expression[Any]] = Map[Int, Expression[Any]]()
+  private var mapping: Map[Int, Expr[Any]] = Map[Int, Expr[Any]]()
   private var varId: Int = -1
   private var lamId: Int = -1
 
-  def addExpr[T](expr: Expression[T]): Expression[T] = {
+  def addExpr[T](expr: Expr[T]): Expr[T] = {
     val id = getVar
     mapping += id -> expr
     VarE(Variable(getName(id)))
@@ -63,22 +63,22 @@ class Program {
 class Elm {
   val prog: Program = new Program()
 
-  def __newVar[T](expr: Expression[T]): Expression[T] = prog.addExpr(expr)
+  def __newVar[T](expr: Expr[T]): Expr[T] = prog.addExpr(expr)
 
-  def __newVar[A, B](fun: Expression[A] => Expression[B]): Expression[A => B] = {
+  def __newVar[A, B](fun: Expr[A] => Expr[B]): Expr[A => B] = {
     val id = prog.getLam
     val x: Variable[A] = Variable(id)
-    val body: Expression[B] = fun(VarE(x))
+    val body: Expr[B] = fun(VarE(x))
     val expr = LambdaE(x, body)
 
     prog.addExpr(expr)
   }
 
-  def infix_+(a: Expression[Int], b: Expression[Int]) = BinOpE(AddB(), a, b)
-  def infix_-(a: Expression[Int], b: Expression[Int]) = BinOpE(SubB(), a, b)
-  def infix_*(a: Expression[Int], b: Expression[Int]) = BinOpE(MulB(), a, b)
-  def infix_/(a: Expression[Int], b: Expression[Int]) = BinOpE(DivB(), a, b)
+  def infix_+(a: Expr[Int], b: Expr[Int]) = BinOpE(AddB(), a, b)
+  def infix_-(a: Expr[Int], b: Expr[Int]) = BinOpE(SubB(), a, b)
+  def infix_*(a: Expr[Int], b: Expr[Int]) = BinOpE(MulB(), a, b)
+  def infix_/(a: Expr[Int], b: Expr[Int]) = BinOpE(DivB(), a, b)
 
-  implicit def intToExp(i: Int): Expression[Int] = NumE(i)
-  implicit def stringToExp(s: String): Expression[String] = StringE(s)
+  implicit def intToExp(i: Int): Expr[Int] = NumE(i)
+  implicit def stringToExp(s: String): Expr[String] = StringE(s)
 }

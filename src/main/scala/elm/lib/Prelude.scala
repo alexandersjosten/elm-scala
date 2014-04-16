@@ -1,5 +1,6 @@
 package elm
 
 object Prelude {
-  val lift = BuiltInE("Signal.lift")
+  def lift[A, B]: Expression[((A => B), Signal[A]) => Signal[B]] =
+    BuiltInE(Variable("Signal.lift"))
 }

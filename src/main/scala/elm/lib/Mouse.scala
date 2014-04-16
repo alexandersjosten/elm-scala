@@ -1,7 +1,7 @@
 package elm
 
 object Mouse {
-  val position = BuiltInE("Mouse.position")
-  val x = BuiltInE("Mouse.x")
-  val y = BuiltInE("Mouse.y")
+  val position: Expression[Signal[(Int, Int)]] = BuiltInE(Variable("Mouse.position"))
+  val x: Expression[Signal[Int]] = BuiltInE(Variable("Mouse.x"))
+  val y: Expression[Signal[Int]] = BuiltInE(Variable("Mouse.y"))
 }

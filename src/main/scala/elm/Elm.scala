@@ -4,14 +4,14 @@ import scala.collection.mutable.MutableList
 import scala.collection.mutable.StringBuilder
 
 class Program {
-  private var mapping: Map[Int, Expression] = Map[Int, Expression]()
+  private var mapping: Map[Int, Expression[Any]] = Map[Int, Expression[Any]]()
   private var varId: Int = -1
   private var lamId: Int = -1
 
-  def addExpr(expr: Expression): Expression = {
+  def addExpr[T](expr: Expression[T]): Expression[T] = {
     val id = getVar
     mapping += id -> expr
-    VarE(getName(id))
+    VarE(Variable(getName(id)))
   }
 
   def emit: String = {
@@ -63,12 +63,13 @@ class Program {
 class Elm {
   val prog: Program = new Program()
 
-  def __newVar[T](expr: Expression): Expression = prog.addExpr(expr)
-  def __newVar[T](fun: Expression => Expression): Expression = {
-    val id   = prog.getLam
-    val x    = VarE(id)
-    val body = fun(x)
-    val expr = LambdaE(id, SimpleT(UnitT()), body)
+  def __newVar[T](expr: Expression[T]): Expression[T] = prog.addExpr(expr)
+
+  def __newVar[A, B](fun: Expression[A] => Expression[B]): Expression[A => B] = {
+    val id = prog.getLam
+    val x: Variable[A] = Variable(id)
+    val body: Expression[B] = fun(VarE(x))
+    val expr = LambdaE(x, body)
 
     prog.addExpr(expr)
   }

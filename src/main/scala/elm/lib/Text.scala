@@ -1,6 +1,8 @@
 package elm
 
 object Text {
-  val plainText = BuiltInE("Text.plainText")
-  val asText = BuiltInE("Text.asText")
+  def plainText: Expression[String => Element] =
+    BuiltInE(Variable("Text.plainText"))
+  def asText[A]: Expression[A => String] =
+    BuiltInE(Variable("Text.asText"))
 }

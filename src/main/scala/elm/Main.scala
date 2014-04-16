@@ -8,9 +8,8 @@ object Main {
 
   def main(args: Array[String]) {
     object Example extends Elm {
-      var a = (x: Expression) => x
-      var b = (x: Expression) => x
-      var main = lift(asText, a(b(Mouse.x)))
+      var a = (x: Expression[Int]) => x + 1
+      var main = lift(a, Mouse.x)
     }
 
     val progStr = Example.prog.emit
@@ -23,4 +22,5 @@ object Main {
     val p = new java.io.PrintWriter(f)
     try { op(p) } finally { p.close() }
   }
+
 }

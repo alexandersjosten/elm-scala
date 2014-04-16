@@ -31,6 +31,10 @@ case class InputSignalE[A](i: Int) extends Expr[Signal[A]]
 case class LiftE1[A, B](e1: Expr[A => Signal[B]], e2: Expr[A])
     extends Expr[Signal[B]]
 case class BuiltInE[A](v: Var[A]) extends Expr[A]
+case class Tup2E[A, B](e1: Expr[A], e2: Expr[B])
+    extends Expr[(A, B)]
+case class Tup3E[A, B, C](e1: Expr[A], e2: Expr[B], e3: Expr[C])
+    extends Expr[(A, B, C)]
 
 object Expr {
   implicit def stringVal[A](e: Expr[A]): String = e match {
@@ -43,10 +47,21 @@ object Expr {
     case App2E(e1, e2, e3)  => appE(e1, e2, e3)
     case BinOpE(op, e1, e2) => e1 + op + e2
     case BuiltInE(v)        => v.toString
+    case Tup2E(a, b)        => tup(a, b)
+    case Tup3E(a, b, c)     => tup(a, b, c)
   }
 
-  private def appE[A](e: Expr[A], es: Expr[Any]*) = {
+  private def appE(e: Expr[Any], es: Expr[Any]*) = {
     "A" + es.size + "(" + e + ", " + es.mkString(", ") + ")"
+  }
+
+  private def tup(es: Expr[Any]*) = {
+    var s = "{ ctor: \"_Tuple" + es.size + "\""
+    for (i <- 0 to es.size-1) {
+      s += ",_" + i + ": " + es(i) + " "
+    }
+    s += "}"
+    s
   }
 
   implicit def expToFunc2[A,B,C](f: Expr[(A,B) => C]): Func2[A, B, C] = Func2(f)

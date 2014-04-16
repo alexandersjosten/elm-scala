@@ -29,7 +29,7 @@ object ElmParser extends RegexParsers {
   val functionHeader: Parser[FunDef[ParserType]] =
     lexeme(ident) >> (n => lexeme(":") ~> typeParser ^^ (f => FunDef(n, f)))
   val typeParser: Parser[ParserType] = {
-    val singleVar = (lexeme(typeIdent) ^^ (t => Var(t)))
+    val singleVar = (lexeme(typeIdent) ^^ (t => VarP(t)))
     val parenType = lexeme("(") ~> typeParser <~ lexeme(")")
     val fun = ((singleVar | parenType) <~ lexeme("->")) ~ typeParser ^^ {
       case ~(v, Fun(ts)) => Fun(v :: ts)

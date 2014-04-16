@@ -11,26 +11,26 @@ object Variable {
 }
 
 // Expr AST stuff
-sealed abstract class Expr[+T] {
+sealed abstract class Expr[+A] {
   override def toString() = Expr.stringVal(this)
 }
 
 case class UnitE() extends Expr[Unit]
 case class NumE(n: Int) extends Expr[Int]
 case class StringE(s: String) extends Expr[String]
-case class VarE[T](v: Variable[T]) extends Expr[T]
-case class LamE1[T1, T2](v: Variable[T1], e: Expr[T2])
-    extends Expr[T1 => T2]
-case class AppE1[T1, T2](e1: Expr[T1 => T2], e2: Expr[T1])
-    extends Expr[T2]
-case class AppE2[T1, T2, T3](e1: Expr[(T1, T2) => T3], e2: Expr[T1],
-                             e3: Expr[T2]) extends Expr[T3]
+case class VarE[A](v: Variable[A]) extends Expr[A]
+case class LamE1[A, B](v: Variable[A], e: Expr[B])
+    extends Expr[A => B]
+case class AppE1[A, B](e1: Expr[A => B], e2: Expr[A])
+    extends Expr[B]
+case class AppE2[A, B, C](e1: Expr[(A, B) => C], e2: Expr[A],
+                          e3: Expr[B]) extends Expr[C]
 case class BinOpE(op: BinOp, e1: Expr[Int], e2: Expr[Int])
     extends Expr[Int]
-case class InputSignalE[T](i: Int) extends Expr[Signal[T]]
-case class LiftE1[T1, T2](e1: Expr[T1 => Signal[T2]], e2: Expr[T1])
-    extends Expr[Signal[T2]]
-case class BuiltInE[T](v: Variable[T]) extends Expr[T]
+case class InputSignalE[A](i: Int) extends Expr[Signal[A]]
+case class LiftE1[A, B](e1: Expr[A => Signal[B]], e2: Expr[A])
+    extends Expr[Signal[B]]
+case class BuiltInE[A](v: Variable[A]) extends Expr[A]
 
 object Expr {
   implicit def stringVal[A](e: Expr[A]): String = e match {
@@ -91,26 +91,26 @@ case class Func1T[A, B](a: SimpleType[A], b: SimpleType[B]) extends SimpleType[A
 case class Func2T[A, B, C]() extends SimpleType[A => B => C]
 
 object SimpleType {
-  implicit def simpleToType[T](s: SimpleType[T]): Type[T] = SimpleT(s)
+  implicit def simpleToType[A](s: SimpleType[A]): Type[A] = SimpleT(s)
 }
 
 // SignalType AST stuff
-sealed abstract class SignalType[T]
-case class SigT[T](t: SimpleType[T]) extends SignalType[T]
-case class SimpToSigT[T1, T2](t1: SimpleType[T1], t2: SignalType[T2])
-    extends SignalType[T1 => T2]
-case class SigToSigT[T1, T2](t1: SignalType[T1], t2: SignalType[T2])
-    extends SignalType[T1 => T2]
+sealed abstract class SignalType[A]
+case class SigT[A](t: SimpleType[A]) extends SignalType[A]
+case class SimpToSigT[A, B](t1: SimpleType[A], t2: SignalType[B])
+    extends SignalType[A => B]
+case class SigToSigT[A, B](t1: SignalType[A], t2: SignalType[B])
+    extends SignalType[A => B]
 
 object SignalType {
-  implicit def signalToType[T](s: SignalType[T]): Type[Signal[T]] =
+  implicit def signalToType[A](s: SignalType[A]): Type[Signal[A]] =
     SignalT(s)
 }
 
 // Type AST stuff
-sealed abstract class Type[+T]
-case class SignalT[T](t: SignalType[T]) extends Type[Signal[T]]
-case class SimpleT[T](t: SimpleType[T]) extends Type[T]
+sealed abstract class Type[+A]
+case class SignalT[A](t: SignalType[A]) extends Type[Signal[A]]
+case class SimpleT[A](t: SimpleType[A]) extends Type[A]
 
 // Statement AST stuff
 sealed abstract class Statement

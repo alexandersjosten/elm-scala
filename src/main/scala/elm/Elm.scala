@@ -8,7 +8,7 @@ class Program {
   private var varId: Int = -1
   private var lamId: Int = -1
 
-  def addExpr[T](expr: Expr[T]): Expr[T] = {
+  def addExpr[A](expr: Expr[A]): Expr[A] = {
     val id = getVar
     mapping += id -> expr
     VarE(Variable(getName(id)))
@@ -63,7 +63,7 @@ class Program {
 class Elm {
   val prog: Program = new Program()
 
-  def __newVar[T](expr: Expr[T]): Expr[T] = prog.addExpr(expr)
+  def __newVar[A](expr: Expr[A]): Expr[A] = prog.addExpr(expr)
 
   def __newVar[A, B](fun: Expr[A] => Expr[B]): Expr[A => B] = {
     val id = prog.getLam

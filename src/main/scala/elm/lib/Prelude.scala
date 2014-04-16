@@ -2,5 +2,5 @@ package elm
 
 object Prelude {
   def lift[A, B]: Expr[((A => B), Signal[A]) => Signal[B]] =
-    BuiltInE(Variable("Signal.lift"))
+    BuiltInE(Var("Signal.lift"))
 }

@@ -11,7 +11,7 @@ class Program {
   def addExpr[A](expr: Expr[A]): Expr[A] = {
     val id = getVar
     mapping += id -> expr
-    VarE(Variable(getName(id)))
+    VarE(Var(getName(id)))
   }
 
   def emit: String = {
@@ -67,9 +67,9 @@ class Elm {
 
   def __newVar[A, B](fun: Expr[A] => Expr[B]): Expr[A => B] = {
     val id = prog.getLam
-    val x: Variable[A] = Variable(id)
+    val x: Var[A] = Var(id)
     val body: Expr[B] = fun(VarE(x))
-    val expr = LamE1(x, body)
+    val expr = Lam1E(x, body)
 
     prog.addExpr(expr)
   }

@@ -2,12 +2,12 @@ package elm
 
 sealed case class Signal[T]()
 sealed case class Element()
-sealed case class Variable[T](name: String) {
-  override def toString() = Variable.stringVal(this)
+sealed case class Var[T](name: String) {
+  override def toString() = Var.stringVal(this)
 }
 
-object Variable {
-  implicit def stringVal[A](v: Variable[A]): String = v.name
+object Var {
+  implicit def stringVal[A](v: Var[A]): String = v.name
 }
 
 // Expr AST stuff
@@ -18,8 +18,8 @@ sealed abstract class Expr[+A] {
 case class UnitE() extends Expr[Unit]
 case class NumE(n: Int) extends Expr[Int]
 case class StringE(s: String) extends Expr[String]
-case class VarE[A](v: Variable[A]) extends Expr[A]
-case class Lam1E[A, B](v: Variable[A], e: Expr[B])
+case class VarE[A](v: Var[A]) extends Expr[A]
+case class Lam1E[A, B](v: Var[A], e: Expr[B])
     extends Expr[A => B]
 case class App1E[A, B](e1: Expr[A => B], e2: Expr[A])
     extends Expr[B]
@@ -30,7 +30,7 @@ case class BinOpE(op: BinOp, e1: Expr[Int], e2: Expr[Int])
 case class InputSignalE[A](i: Int) extends Expr[Signal[A]]
 case class LiftE1[A, B](e1: Expr[A => Signal[B]], e2: Expr[A])
     extends Expr[Signal[B]]
-case class BuiltInE[A](v: Variable[A]) extends Expr[A]
+case class BuiltInE[A](v: Var[A]) extends Expr[A]
 
 object Expr {
   implicit def stringVal[A](e: Expr[A]): String = e match {

@@ -16,11 +16,11 @@ object ElmParser extends RegexParsers {
     val stmt = lexeme(moduleIdent) ^^ (n => Import(n, List()))
     lexeme("import") ~> stmt <~ lexeme("\n")
   }
-  val functionName: Parser[FunDef] = {
+  val functionName: Parser[FunDef[Unit]] = {
     val fun = lexeme(ident) ^^ (n => FunDef(n, SimpleT(UnitT())))
     fun <~ "[ ]*:[^\n]*\n".r
   }
-  
+
   val comments: Parser[Unit] = {
     lazy val f: Parser[Unit] = { ("-}" | "(?s).".r ~> f) ~> success(Unit) }
 
@@ -38,16 +38,16 @@ object ElmParser extends RegexParsers {
     val commentImport = comments ~> repsep(importStmt, comments)
     val commentFunction = comments ~> repsep(functionName, comments)
 
-    
+
     (commentModule ~ commentImport ~ commentFunction) <~ EOF ^^ {
       case ~(~(name, imports), funs) => ElmModule(name, imports, funs)
     }
-    
+
     //commentImport ^^ (is => new ElmModule("apa", is, List()))
     //comments ~> (repsep(functionName, comments) ^^ (fs => new ElmModule("apa", List(), fs)))
 
     //comments ~> (moduleName ^^ (n => new ElmModule(n, List(), List())))
-    
+
 
   }
 
@@ -58,7 +58,7 @@ object ElmParser extends RegexParsers {
   type Name = String
 
   sealed case class Import(s: Name, fns: List[Name])
-  sealed case class FunDef(s: Name, ty: Type)
+  sealed case class FunDef[+T](s: Name, ty: Type[T])
   sealed case class ElmModule(name: Name, imports: List[Import],
-                              functions: List[FunDef])
+                              functions: List[FunDef[Any]])
 }

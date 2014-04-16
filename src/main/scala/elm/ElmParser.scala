@@ -23,12 +23,14 @@ object ElmParser extends RegexParsers {
 
   val typeParser: Parser[ParserType] = {
     val singleVar = (lexeme(typeIdent) ^^ (t => Var(t)))
-    val fun = (singleVar <~ lexeme("->")) ~ typeParser ^^ {
+    val parenType = lexeme("(") ~> typeParser <~ lexeme(")")
+    val fun = ((singleVar | parenType) <~ lexeme("->")) ~ typeParser ^^ {
       case ~(v, Fun(ts)) => Fun(v :: ts)
       case ~(v, ts)      => Fun(v, ts)
     }
-
-    singleVar | fun
+    
+    fun | parenType | singleVar
+  }
   }
   val comments: Parser[Unit] = {
     lazy val f: Parser[Unit] = { ("-}" | "(?s).".r ~> f) ~> success(Unit) }

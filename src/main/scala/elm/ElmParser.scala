@@ -75,7 +75,7 @@ object ElmParser extends RegexParsers {
   }
 
   // lexeme, parse all trailing whitespaces and tabs
-  def lexeme[T](p: Parser[T]): Parser[T] = p <~ "[ \t]*".r
+  def lexeme[A](p: Parser[A]): Parser[A] = p <~ "[ \t]*".r
 
   def parseElm(s: String): ParseResult[ElmModule] = parse(elmModule, s)
   type Name = String

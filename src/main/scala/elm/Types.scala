@@ -19,11 +19,11 @@ case class UnitE() extends Expr[Unit]
 case class NumE(n: Int) extends Expr[Int]
 case class StringE(s: String) extends Expr[String]
 case class VarE[A](v: Variable[A]) extends Expr[A]
-case class LamE1[A, B](v: Variable[A], e: Expr[B])
+case class Lam1E[A, B](v: Variable[A], e: Expr[B])
     extends Expr[A => B]
-case class AppE1[A, B](e1: Expr[A => B], e2: Expr[A])
+case class App1E[A, B](e1: Expr[A => B], e2: Expr[A])
     extends Expr[B]
-case class AppE2[A, B, C](e1: Expr[(A, B) => C], e2: Expr[A],
+case class App2E[A, B, C](e1: Expr[(A, B) => C], e2: Expr[A],
                           e3: Expr[B]) extends Expr[C]
 case class BinOpE(op: BinOp, e1: Expr[Int], e2: Expr[Int])
     extends Expr[Int]
@@ -38,9 +38,9 @@ object Expr {
     case NumE(n)            => n.toString
     case StringE(s)         => "\"" + s + "\""
     case VarE(v)            => v.toString
-    case LamE1(v, e)        => "function (" + v + ") { return " + e + "; }"
-    case AppE1(e1, e2)      => e1 + "(" + e2 + ")"
-    case AppE2(e1, e2, e3)  => appE(e1, e2, e3)
+    case Lam1E(v, e)        => "function (" + v + ") { return " + e + "; }"
+    case App1E(e1, e2)      => e1 + "(" + e2 + ")"
+    case App2E(e1, e2, e3)  => appE(e1, e2, e3)
     case BinOpE(op, e1, e2) => e1 + op + e2
     case BuiltInE(v)        => v.toString
   }
@@ -55,11 +55,11 @@ object Expr {
 }
 
 sealed case class Func1[A, B](expr: Expr[A => B]) {
-  def apply(a: Expr[A]): Expr[B] = AppE1(expr, a)
+  def apply(a: Expr[A]): Expr[B] = App1E(expr, a)
 }
 
 sealed case class Func2[A, B, C](expr: Expr[(A, B) => C]) {
-  def apply(a: Expr[A], b: Expr[B]): Expr[C] = AppE2(expr, a, b)
+  def apply(a: Expr[A], b: Expr[B]): Expr[C] = App2E(expr, a, b)
 }
 
 // Binary operators for type Expr

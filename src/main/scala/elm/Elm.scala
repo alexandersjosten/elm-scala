@@ -74,6 +74,11 @@ class Elm {
     prog.addExpr(expr)
   }
 
-  implicit def intToExp(i: Int): Expression = NumE(i)
-  implicit def stringToExp(s: String): Expression = StringE(s)
+  def infix_+(a: Expression[Int], b: Expression[Int]) = BinOpE(AddB(), a, b)
+  def infix_-(a: Expression[Int], b: Expression[Int]) = BinOpE(SubB(), a, b)
+  def infix_*(a: Expression[Int], b: Expression[Int]) = BinOpE(MulB(), a, b)
+  def infix_/(a: Expression[Int], b: Expression[Int]) = BinOpE(DivB(), a, b)
+
+  implicit def intToExp(i: Int): Expression[Int] = NumE(i)
+  implicit def stringToExp(s: String): Expression[String] = StringE(s)
 }

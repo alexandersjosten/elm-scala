@@ -108,7 +108,7 @@ object SignalType {
 }
 
 // Type AST stuff
-sealed abstract class Type[T]
+sealed abstract class Type[+T]
 case class SignalT[T](t: SignalType[T]) extends Type[Signal[T]]
 case class SimpleT[T](t: SimpleType[T]) extends Type[T]
 

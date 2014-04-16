@@ -69,7 +69,7 @@ class Elm {
     val id = prog.getLam
     val x: Variable[A] = Variable(id)
     val body: Expr[B] = fun(VarE(x))
-    val expr = LambdaE(x, body)
+    val expr = LamE1(x, body)
 
     prog.addExpr(expr)
   }

@@ -19,7 +19,7 @@ case class UnitE() extends Expr[Unit]
 case class NumE(n: Int) extends Expr[Int]
 case class StringE(s: String) extends Expr[String]
 case class VarE[T](v: Variable[T]) extends Expr[T]
-case class LambdaE[T1, T2](v: Variable[T1], e: Expr[T2])
+case class LamE1[T1, T2](v: Variable[T1], e: Expr[T2])
     extends Expr[T1 => T2]
 case class AppE1[T1, T2](e1: Expr[T1 => T2], e2: Expr[T1])
     extends Expr[T2]
@@ -38,7 +38,7 @@ object Expr {
     case NumE(n)            => n.toString
     case StringE(s)         => "\"" + s + "\""
     case VarE(v)            => v.toString
-    case LambdaE(v, e)      => "function (" + v + ") { return " + e + "; }"
+    case LamE1(v, e)        => "function (" + v + ") { return " + e + "; }"
     case AppE1(e1, e2)      => e1 + "(" + e2 + ")"
     case AppE2(e1, e2, e3)  => appE(e1, e2, e3)
     case BinOpE(op, e1, e2) => e1 + op + e2

@@ -80,10 +80,7 @@ object ElmParser extends RegexParsers {
   def lexeme[A](p: Parser[A]): Parser[A] = p <~ "[ \t]*".r
 
   def parseElm(s: String): ParseResult[ElmModule] = parse(elmModule, s)
-  //def parseElm(s: String): ParseResult[List[FunDef[ParserType]]] = {
-  //  println(s)
-  //  parse(elmModule, s)
-  //}
+
   type Name = String
 
   sealed case class Import(s: Name, fns: List[Name])

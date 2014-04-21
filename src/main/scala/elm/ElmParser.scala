@@ -28,6 +28,13 @@ object ElmParser extends RegexParsers {
    */
   val functionHeader: Parser[FunDef[ParserType]] =
     lexeme(ident) >> (n => lexeme(":") ~> typeParser ^^ (f => FunDef(n, f)))
+
+  /* parser for the different types, can be of any of the following forms:
+   * a
+   * (a) -> b ..
+   * a -> b ..
+   * (a -> b) -> c
+   */
   val typeParser: Parser[ParserType] = {
     val singleVar = (lexeme(typeIdent) ^^ (t => VarP(t)))
     val parenType = lexeme("(") ~> typeParser <~ lexeme(")")
@@ -44,6 +51,8 @@ object ElmParser extends RegexParsers {
   }
   val function: Parser[FunDef[ParserType]] =
     functionHeader <~ "\n" <~ functionBody
+
+  // parses the comments, both multiline and single line comments
   val comments: Parser[Unit] = {
     lazy val f: Parser[Unit] = { ("-}" | "(?s).".r ~> f) ~> success(Unit) }
 
@@ -56,32 +65,29 @@ object ElmParser extends RegexParsers {
     }
   }
 
+  // parser the module, uses functions above
   val elmModule: Parser[ElmModule] = {
     val commentModule = comments ~> moduleName
     val commentImport = comments ~> repsep(importStmt, comments)
     val commentFunction = comments ~> repsep(function, comments)
-
-
-    (commentModule ~ commentImport ~ commentFunction) <~ EOF ^^ {
+    
+    (commentModule ~ commentImport ~ commentFunction) ^^ {
       case ~(~(name, imports), funs) => ElmModule(name, imports, funs)
     }
-
-    //commentImport ^^ (is => new ElmModule("apa", is, List()))
-    //comments ~> (repsep(functionName, comments) ^^ (fs => new ElmModule("apa", List(), fs)))
-
-    //comments ~> (moduleName ^^ (n => new ElmModule(n, List(), List())))
-
-
   }
 
   // lexeme, parse all trailing whitespaces and tabs
   def lexeme[A](p: Parser[A]): Parser[A] = p <~ "[ \t]*".r
 
   def parseElm(s: String): ParseResult[ElmModule] = parse(elmModule, s)
+  //def parseElm(s: String): ParseResult[List[FunDef[ParserType]]] = {
+  //  println(s)
+  //  parse(elmModule, s)
+  //}
   type Name = String
 
   sealed case class Import(s: Name, fns: List[Name])
   sealed case class FunDef[+T](s: Name, ty: ParserType)
   sealed case class ElmModule(name: Name, imports: List[Import],
-                              functions: List[FunDef[Any]])
+                              functions: List[FunDef[ParserType]])
 }

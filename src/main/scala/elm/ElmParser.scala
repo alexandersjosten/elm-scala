@@ -46,8 +46,8 @@ object ElmParser extends RegexParsers {
     fun | parenType | singleVar
   }
   val functionBody: Parser[Unit] = {
-    val fun = rep1(lexeme(ident)) ~> lexeme("=")
-    fun ~> rep("[^\n]*[\n]".r ~> guard("[ \t]".r)) ~> success(Unit)
+    val firstLine = rep1(lexeme(ident)) ~> lexeme("=") ~> "[^\n]*[\n]".r
+    firstLine ~> rep(guard("[ \t]".r) ~> "[^\n]*[\n]".r) ~> success(Unit)
   }
   val function: Parser[FunDef[ParserType]] =
     functionHeader <~ "\n" <~ functionBody

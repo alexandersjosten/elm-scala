@@ -103,7 +103,7 @@ case class NumT() extends SimpleType[Int]
 case class StringT() extends SimpleType[String]
 case class ElementT() extends SimpleType[Element]
 case class Func1T[A, B](a: SimpleType[A], b: SimpleType[B]) extends SimpleType[A => B]
-case class Func2T[A, B, C]() extends SimpleType[A => B => C]
+case class Func2T[A, B, C]() extends SimpleType[(A, B) => C]
 
 object SimpleType {
   implicit def simpleToType[A](s: SimpleType[A]): Type[A] = SimpleT(s)

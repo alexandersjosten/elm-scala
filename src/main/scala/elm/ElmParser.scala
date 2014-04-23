@@ -9,7 +9,7 @@ object ElmParser extends RegexParsers {
   override val skipWhitespace = false
 
   val ident: Parser[String] = "[a-z][A-Za-z0-9_]*".r
-  val typeIdent: Parser[String] = "[A-Za-z0-9_]+".r
+  val typeIdent: Parser[String] = "[A-Za-z0-9_ ]+".r
   val moduleIdent: Parser[Name] = rep1sep("[A-Z][A-Za-z0-9.]*".r, ".") ^^ (_ mkString ".")
   val moduleName: Parser[Name]  =
     lexeme("module") ~> lexeme(moduleIdent) <~ lexeme("where") <~ "\n"

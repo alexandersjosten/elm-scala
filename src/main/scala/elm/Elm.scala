@@ -81,4 +81,10 @@ class Elm {
 
   implicit def intToExp(i: Int): Expr[Int] = NumE(i)
   implicit def stringToExp(s: String): Expr[String] = StringE(s)
+  implicit def tup2ToExp[A,B](p: (A, B))
+    (implicit fa: A => Expr[A], fb: B => Expr[B])
+      : Expr[(A, B)] = Tup2E(p._1, p._2)
+  implicit def tup3ToExp[A,B,C](p: (A, B, C))
+    (implicit fa: A => Expr[A], fb: B => Expr[B], fc: C => Expr[C])
+      : Expr[(A, B, C)] = Tup3E(p._1, p._2, p._3)
 }

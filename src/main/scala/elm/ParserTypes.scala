@@ -4,7 +4,7 @@ sealed abstract class ParserType {
   implicit def stringVal(pt: ParserType): String = {
     pt match {
       case VarP(s)       => s
-      case TupleType(ts) => "Expr[(" + ts.mkString(",") + ")]"
+      case TupleType(ts) => "(" + ts.mkString(",") + ")"
       case Fun(ts)       =>
         var str: String = "Expr["
         if(ts.length > 2) str += "("

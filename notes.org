@@ -5,3 +5,6 @@
 
 * links
   - https://github.com/tiarkrompf/scala-virtualized/wiki
+
+  - JScala: https://github.com/nau/jscala. Scala code to javascript
+    using scala macros.

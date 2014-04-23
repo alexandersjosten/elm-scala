@@ -1,5 +1,0 @@
-package elm
-
-object ParseElmLib {
-  
-}

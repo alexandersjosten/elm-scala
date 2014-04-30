@@ -44,13 +44,15 @@ object ElmParser extends RegexParsers {
         case _ => TupleType(ts)
       }
     )) <~ lexeme(")")
-
-    val fun = ((singleVar | parenType) <~ lexeme("->")) ~ typeParser ^^ {
+    lazy val app: Parser[ParserType] = singleVar ~ rep1(lexeme(app | singleVar | parenType)) ^^ {
+      case ~(v, xs) => xs.foldLeft[ParserType](v)(App)
+    }
+    val fun = ((app | singleVar | parenType) <~ lexeme("->")) ~ typeParser ^^ {
       case ~(v, Fun(ts)) => Fun(v :: ts)
       case ~(v, ts)      => Fun(v, ts)
     }
     
-    fun | parenType | singleVar
+    fun | parenType | app | singleVar
   }
   val functionBody: Parser[Unit] = {
     val firstLine = rep1(lexeme(ident)) ~> lexeme("=") ~> "[^\n]*[\n]".r

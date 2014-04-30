@@ -80,7 +80,7 @@ object ElmParser extends RegexParsers {
     val commentImport = comments ~> repsep(importStmt, comments)
     val commentFunction = comments ~> repsep(function, comments)
     
-    (commentModule ~ commentImport ~ commentFunction) ^^ {
+    (commentModule ~ commentImport ~ commentFunction) <~ EOF ^^ {
       case ~(~(name, imports), funs) => ElmModule(name, imports, funs)
     }
   }

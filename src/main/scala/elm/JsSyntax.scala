@@ -26,153 +26,126 @@
  *
  */
 
-package de.tuberlin.uebb.sl2.modules
+package elm
 
-import org.kiama.output.PrettyPrinter
 import scala.language.implicitConversions
 
 /**
   * Abstract syntax of JavaScript
   */
-trait JsSyntax {
+sealed abstract class JsStmt {
+  def &(other: JsStmt) = JsStmtConcat(List(this, other))
+}
 
-  sealed abstract class JsStmt {
-    def &(other: JsStmt) = JsStmtConcat(List(this, other))
+object JsStmt {
+  implicit def stmtsToStmt(l: List[JsStmt]): JsStmtConcat = JsStmtConcat(l)
+}
+
+case class JsStmtConcat(stmts: List[JsStmt]) extends JsStmt {
+  override def &(other: JsStmt) = other match {
+    case JsStmtConcat(l) => JsStmtConcat(stmts ++ l)
+    case _ => JsStmtConcat(stmts :+ other)
   }
+}
 
-  case class JsStmtConcat(stmts: List[JsStmt]) extends JsStmt {
-    override def &(other: JsStmt) = other match {
-      case JsStmtConcat(l) => JsStmtConcat(stmts ++ l)
-      case _ => JsStmtConcat(stmts :+ other)
-    }
-  }
+case class JsFunction(name: JsName, params: List[JsName], var body: JsStmt) extends JsStmt
+case class JsDeclaration(name: JsName) extends JsStmt
+case class JsAssignment(lhs: JsExpr, rhs: JsExpr) extends JsExpr
+case class JsDef(name: JsName, rhs: JsExpr) extends JsStmt
+object Noop extends JsStmt
+case class JsIf(conditiond: JsExpr, body: JsStmt) extends JsStmt
+case class JsIfElse(conditiond: JsExpr, body: JsStmt, elseBody: JsStmt) extends JsStmt
+case class JsWhile(conditiond: JsExpr, body: JsStmt) extends JsStmt
+case class JsDoWhile(conditiond: JsExpr, body: JsStmt) extends JsStmt
+case class JsFor(initial: JsStmt, condition: JsStmt, increment: JsStmt, body: JsStmt) extends JsStmt
+//TODO check if JsStmt is in JsForIn really necessary
+case class JsForIn(x: JsStmt, in: JsStmt, body: JsStmt) extends JsStmt
+object JsBreak extends JsStmt
+object JsContinue extends JsStmt
+case class JsReturn(e: Option[JsExpr]) extends JsStmt {
+  def this() = this(None)
+  def this(e: JsExpr) = this(Some(e))
+}
+case class JsBlock(body: JsStmt) extends JsStmt
+case class JsTryCatch(tryBody: JsStmt, catchVar: JsName, catchBody: JsStmt) extends JsStmt
+case class JsThrow(exception: String) extends JsStmt
+case class JsExprS(e: JsExpr) extends JsStmt
 
-  case class JsFunction(name: JsName, params: List[JsName], body: JsStmt) extends JsStmt
-  // var name;
-  case class JsDeclaration(name: JsName) extends JsStmt
-  // lhs = rhs
-  case class JsAssignment(lhs: JsExpr, rhs: JsExpr) extends JsStmt
-  // var name = rhs;
-  case class JsDef(name: JsName, rhs: JsExpr) extends JsStmt
-  object Noop extends JsStmt
+sealed abstract class JsExpr
 
-  case class JsIf(conditiond: JsExpr, body: JsStmt) extends JsStmt
-  case class JsIfElse(conditiond: JsExpr, body: JsStmt, elseBody: JsStmt) extends JsStmt
-  case class JsWhile(conditiond: JsExpr, body: JsStmt) extends JsStmt
-  case class JsDoWhile(conditiond: JsExpr, body: JsStmt) extends JsStmt
-  case class JsFor(initial: JsStmt, condition: JsStmt, increment: JsStmt, body: JsStmt) extends JsStmt
-  //TODO check if JsStmt is in JsForIn really necessary
-  case class JsForIn(x: JsStmt, in: JsStmt, body: JsStmt) extends JsStmt
-  object JsBreak extends JsStmt
-  object JsContinue extends JsStmt
-  case class JsReturn(e: Option[JsExpr]) extends JsStmt {
-    def this() = this(None)
-    def this(e: JsExpr) = this(Some(e))
-  }
-  case class JsBlock(body: JsStmt) extends JsStmt
-  case class JsTryCatch(tryBody: JsStmt, catchVar: JsName, catchBody: JsStmt) extends JsStmt
-  case class JsThrow(exception: String) extends JsStmt
-
-  sealed abstract class JsExpr extends JsStmt
-  case class JsName(name: String) extends JsExpr
-  case class JsQualifiedName(qualifier: JsName, name: JsName) extends JsExpr
-
-  case class JsNum(n: Number) extends JsExpr
-  case class JsStr(s: String) extends JsExpr
-  case class JsBool(b: Boolean) extends JsExpr
-  case class JsRaw(s: String) extends JsExpr
-  object JsNull extends JsExpr
-  case class JsNew(name: JsName, args: List[JsExpr]) extends JsExpr
-  // Foo(x,y,z)
-  case class JsFunctionCall(function: JsExpr, args: JsExpr*) extends JsExpr
-  // obj[arg]
-  case class JsMemberAccess(obj: JsExpr, arg: JsExpr) extends JsExpr
-  //{s1:e1, s2:e1,..., sn:en}
-  case class JsObject(fields: List[(JsName, JsExpr)]) extends JsExpr
-
-  case class JsAnonymousFunction(params: List[JsName], body: JsStmt) extends JsExpr
-
-  case class JsBinOp(lhs: JsExpr, op: JsName, rhs: JsExpr) extends JsExpr
-  case class JsUnOp(op: JsName, e: JsExpr) extends JsExpr
-
-  sealed case class JsPattern(condition : JsExpr, variables : List[JsDef]) {
-    def &(that : JsPattern) : JsPattern = {
-      JsPattern(JsBinOp(condition, "&&", that.condition), variables ++ that.variables)
-    }
-  }
-
+object JsExpr {
   implicit def nameToJsExpr(s: String): JsName = JsName(s)
   implicit def numToJsExpr(n: Number): JsNum = JsNum(n)
   implicit def boolToJsExpr(b: Boolean): JsBool = JsBool(b)
-  implicit def stmtsToStmt(l: List[JsStmt]): JsStmtConcat = JsStmtConcat(l)
 
-  object JsPrettyPrinter {
-    import scala.text.Document
-    import scala.text.Document._
+  implicit def exprToStmt(e: JsExpr) = JsExprS(e)
+}
 
-    def pretty(js: JsStmt) = {
-      val doc = show(js)
-      val w = new java.io.StringWriter()
-      doc.format(140, w)
-      w.toString()
+case class JsName(name: String) extends JsExpr
+case class JsQualifiedName(qualifier: JsName, name: JsName) extends JsExpr
+case class JsNum(n: Number) extends JsExpr
+case class JsStr(s: String) extends JsExpr
+case class JsBool(b: Boolean) extends JsExpr
+case class JsRaw(s: String) extends JsExpr
+object JsNull extends JsExpr
+case class JsNew(name: JsName, args: List[JsExpr]) extends JsExpr
+case class JsFunctionCall(f: JsExpr, args: JsExpr*) extends JsExpr
+case class JsMemberAccess(obj: JsExpr, arg: JsExpr) extends JsExpr
+case class JsObject(fields: List[(JsName, JsExpr)]) extends JsExpr
+case class JsAnonymousFunction(params: List[JsName], var body: JsStmt) extends JsExpr
+case class JsBinOp(lhs: JsExpr, op: JsName, rhs: JsExpr) extends JsExpr
+case class JsUnOp(op: JsName, e: JsExpr) extends JsExpr
+case class JsUnit() extends JsExpr
+
+object JsObject {
+  def apply() = new JsObject(List())
+}
+
+object JsPrettyPrinter {
+  def parens(s: String) = "(" + s + ")"
+
+  def braces(s: String) = "{" + s + "}"
+
+  def indent(s: String): String = {
+    import scala.util.matching.Regex
+    "  " + ("\n(.)".r replaceAllIn(s, "\n  $1"))
+  }
+
+  def prettyBlock(s: JsStmt) = s match {
+    case JsStmtConcat(Nil) => "{}"
+    case _ => "{" + indent("\n" + prettyStmt(s)) + "\n}"
+  }
+
+  def prettyStmt(js: JsStmt): String = js match {
+    case JsStmtConcat(ss) => ss.map(prettyStmt).mkString("\n")
+    case JsBlock(m) => prettyBlock(m)
+    case JsExprS(e) => prettyExpr(e) + ";"
+    case JsReturn(None) => "return;"
+    case JsReturn(Some(e)) => "return " + prettyExpr(e) + ";"
+    case JsIf(cond, body) => "if " + parens(prettyExpr(cond)) + " " + prettyBlock(body)
+    case JsDef(n, e) => "var " + prettyExpr(n) + " = " + prettyExpr(e) + ";"
+    case Noop => ""
+    case _ => throw new RuntimeException("Not matched: " + js.toString)
+  }
+
+  def prettyExpr(js: JsExpr): String = js match {
+    case JsAssignment(el, er) => prettyExpr(el) + " = " + prettyExpr(er)
+    case JsName(n) => n
+    case JsBinOp(el, op, er) => prettyExpr(el) + " " + prettyExpr(op) + " " + prettyExpr(er)
+    case JsObject(m) => {
+      def f(x: (JsName, JsExpr)) = JsBinOp(x._1, ":", x._2)
+
+      braces(m.map(f).map(prettyExpr).mkString(", "))
     }
+    case JsStr(s) => "\"" + s + "\""
+    case JsAnonymousFunction(args, body) =>
+      "function " + parens(args.map(prettyExpr).mkString(", ")) + " " + prettyBlock(body)
 
-    implicit def str2Doc(s : String) = text(s)
+    case JsFunctionCall(f, args @ _*) =>
+      prettyExpr(f) + parens(args.map(prettyExpr).mkString(", "))
+    case JsUnit() => "()"
 
-    def sepred(d : Seq[Document], sep : Document) : Document = {
-      if (d.isEmpty)
-        empty
-      else if (d.size == 1)
-        d.head
-      else
-        d.head :: sep :: sepred(d.tail, sep)
-    }
-
-    def parens(d : Document) = "(" :: d :: ")"
-
-    def braces(d : Document) = "{" :: d :: "}"
-
-    def brackets(d : Document) = "[" :: d :: "]"
-
-    def nested(d : Document) : Document = nest(2, d)
-
-    implicit def show(stmt: JsStmt) : Document = stmt match {
-      case JsStmtConcat(l) =>  sepred(l map show, ";" :: break)
-      case JsBlock(s) => showJsStmtAsBlock(s)
-      case JsFunction(name, params, body) => "function" :: " " :: name :: parens(sepred(params map show, ", ")) :/: showJsStmtAsBlock(body)
-      case JsDeclaration(n) => "var" :: " " :: n
-      case JsDef(n,rhs) => "var " :: n :: " = " :: rhs //TODO rhs to long?
-      case JsAssignment(l,r) => l :: " = " :: r
-      case Noop => empty
-      case JsIf(c,b) => "if"::parens(c):/:showJsStmtAsBlock(b)
-      case JsIfElse(c,b,e) => "if" :: parens(c) :/: showJsStmtAsBlock(b) :/: "else " :/: showJsStmtAsBlock(e)
-      case JsWhile(c,b)=>"while" :: parens(c) :/: showJsStmtAsBlock(b)
-      case JsDoWhile(c,b)=>"do":/: showJsStmtAsBlock(b) :/: "while" :: parens(c)
-      case JsFor(ini, c, inc, b)  => "for" :: parens(ini :: ";" :: c :: ";" :: inc) :/: showJsStmtAsBlock(b)
-      case JsForIn(x, in,b) => "for" :: parens(x :: " in " :: in) :/: showJsStmtAsBlock(b)
-      case JsBreak => "break"
-      case JsContinue => "continue"
-      case JsReturn(e) => "return " :: e.map(show).getOrElse(empty)
-      case JsTryCatch(tb,c,cb) => "try" :/: showJsStmtAsBlock(tb) :/: "catch" :: parens(c) :/: showJsStmtAsBlock(cb)
-      case JsThrow(s) => "throw ":: "\"" :: s :: "\""
-      case JsName(n) => n
-      case JsQualifiedName(qualifier, n) => qualifier :: "." :: n
-      case JsNum(v) => v.toString
-      case JsBool(b) => b.toString
-      case JsStr(s) => "\"" :: s :: "\""
-      case JsRaw(s) =>  s.trim()
-      case JsNew(n,args)  => "new " :: n :: parens(sepred(args.map(show), ", "))
-      case JsFunctionCall(n,args @ _*) => n :: parens(sepred(args.map(show), ", "))
-      case JsMemberAccess(o,p) => o::brackets(p)
-      case JsObject(f) => braces (nested (sepred(f.map(x =>x._1 :: " : " :: x._2), ", ")) :: break)
-      case JsAnonymousFunction(params,b) => "function " :: parens(sepred(params map show, ", ")) :/: showJsStmtAsBlock(b)
-      case JsBinOp(l,o,r) => parens(l :: " " :: o :: " " :: r)
-      case JsUnOp(o,e) => parens(o :: e)
-      case JsNull => "null"
-    }
-
-
-    def showJsStmtAsBlock(s: JsStmt) : Document = braces (nested (break :: s) :: break)
+    case _ => throw new RuntimeException("Not matched: " + js.toString)
   }
 
 }

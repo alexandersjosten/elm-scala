@@ -131,15 +131,18 @@ object JsPrettyPrinter {
   def prettyExpr(js: JsExpr): String = js match {
     case JsAssignment(el, er) => prettyExpr(el) + " = " + prettyExpr(er)
     case JsName(s) => s
-    case JsStr(s) => "\"" + s + "\""
+    case JsQualifiedName(q: JsName, name: JsName) => prettyExpr(q) + "." + prettyExpr(name)
     case JsNum(n) => n.toString
+    case JsStr(s) => "\"" + s + "\""
+    case JsBool(b) => b.toString
+    case JsRaw(s) => s
+    case JsFunctionCall(f, args @ _*) =>
+      prettyExpr(f) + parens(args.map(prettyExpr).mkString(", "))
     case JsObject(m) => {
       def f(x: (JsName, JsExpr)) = JsBinOp(x._1, ":", x._2)
 
       braces(m.map(f).map(prettyExpr).mkString(", "))
     }
-    case JsFunctionCall(f, args @ _*) =>
-      prettyExpr(f) + parens(args.map(prettyExpr).mkString(", "))
     case JsAnonymousFunction(args, body) =>
       "function " + parens(args.map(prettyExpr).mkString(", ")) + " " + prettyBlock(body)
     case JsBinOp(el, op, er) => prettyExpr(el) + " " + prettyExpr(op) + " " + prettyExpr(er)

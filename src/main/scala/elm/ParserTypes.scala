@@ -13,11 +13,7 @@ sealed abstract class ParserType {
       case other         => stringValAux(other)
     }
   }
-  /*
-   Expr[(Expr[a => b],Signal a) => Signal b]
-   (a -> b) -> Signal a -> Signal b
-   Expr[((A => B), Signal[A]) => Signal[B]]
-   */
+
   def stringValAux(pt: ParserType): String = {
     pt match {
       case VarP(s)       =>

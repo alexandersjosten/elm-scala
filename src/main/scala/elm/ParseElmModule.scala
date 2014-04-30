@@ -18,7 +18,7 @@ object ParseElmModule {
         variables.foreach((v: String) => retStr += v + ",")
         retStr = retStr.dropRight(1) + "]: "
       }
-      // BuiltInE(Var("Signal.lift"))
+      
       retStr += fd.ty.stringVal(fd.ty)
       retStr += " =\n    BuiltInE(Var(\"" + em.name + "." + fd.s + "\"))\n\n"
     })

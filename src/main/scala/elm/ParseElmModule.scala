@@ -7,7 +7,7 @@ object ParseElmModule {
     var retStr: String = "package elm\n\n"
     retStr += "object " + em.name + " {\n"
     em.functions.foreach({(fd: FunDef[ParserType]) =>
-      retStr += "def " + fd.s
+      retStr += "  def " + fd.s
       val variables = findVars(fd.ty)
 
       if(variables.isEmpty) {
@@ -18,8 +18,9 @@ object ParseElmModule {
         variables.foreach((v: String) => retStr += v + ",")
         retStr = retStr.dropRight(1) + "]: "
       }
-
-      retStr += fd.ty.stringVal(fd.ty) + "\n"
+      // BuiltInE(Var("Signal.lift"))
+      retStr += fd.ty.stringVal(fd.ty)
+      retStr += " =\n    BuiltInE(Var(\"" + em.name + "." + fd.s + "\"))\n\n"
     })
     retStr += "}\n"
     retStr

@@ -50,7 +50,6 @@ case class JsStmtConcat(stmts: List[JsStmt]) extends JsStmt {
 
 case class JsFunction(name: JsName, params: List[JsName], var body: JsStmt) extends JsStmt
 case class JsDeclaration(name: JsName) extends JsStmt
-case class JsAssignment(lhs: JsExpr, rhs: JsExpr) extends JsExpr
 case class JsDef(name: JsName, rhs: JsExpr) extends JsStmt
 object Noop extends JsStmt
 case class JsIf(conditiond: JsExpr, body: JsStmt) extends JsStmt
@@ -81,6 +80,7 @@ object JsExpr {
   implicit def exprToStmt(e: JsExpr) = JsExprS(e)
 }
 
+case class JsAssignment(lhs: JsExpr, rhs: JsExpr) extends JsExpr
 case class JsName(name: String) extends JsExpr
 case class JsQualifiedName(qualifier: JsName, name: JsName) extends JsExpr
 case class JsNum(n: Number) extends JsExpr
@@ -130,19 +130,19 @@ object JsPrettyPrinter {
 
   def prettyExpr(js: JsExpr): String = js match {
     case JsAssignment(el, er) => prettyExpr(el) + " = " + prettyExpr(er)
-    case JsName(n) => n
-    case JsBinOp(el, op, er) => prettyExpr(el) + " " + prettyExpr(op) + " " + prettyExpr(er)
+    case JsName(s) => s
+    case JsStr(s) => "\"" + s + "\""
+    case JsNum(n) => n.toString
     case JsObject(m) => {
       def f(x: (JsName, JsExpr)) = JsBinOp(x._1, ":", x._2)
 
       braces(m.map(f).map(prettyExpr).mkString(", "))
     }
-    case JsStr(s) => "\"" + s + "\""
-    case JsAnonymousFunction(args, body) =>
-      "function " + parens(args.map(prettyExpr).mkString(", ")) + " " + prettyBlock(body)
-
     case JsFunctionCall(f, args @ _*) =>
       prettyExpr(f) + parens(args.map(prettyExpr).mkString(", "))
+    case JsAnonymousFunction(args, body) =>
+      "function " + parens(args.map(prettyExpr).mkString(", ")) + " " + prettyBlock(body)
+    case JsBinOp(el, op, er) => prettyExpr(el) + " " + prettyExpr(op) + " " + prettyExpr(er)
     case JsUnit() => "()"
 
     case _ => throw new RuntimeException("Not matched: " + js.toString)

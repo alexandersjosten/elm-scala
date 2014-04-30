@@ -21,6 +21,7 @@ sealed abstract class ParserType {
 case class VarP(s: String) extends ParserType
 case class TupleType(ts: List[ParserType]) extends ParserType
 case class Fun(ts: List[ParserType]) extends ParserType
+case class App(left: ParserType, right: ParserType) extends ParserType
 
 object Fun {
   def apply(t: ParserType*): Fun = Fun(t.toList)

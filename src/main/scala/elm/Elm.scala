@@ -73,6 +73,31 @@ class Elm {
     prog.addExpr(expr)
   }
 
+  def __newVar[A, B, C](fun: (Expr[A], Expr[B]) => Expr[C]): Expr[(A, B) => C] = {
+    val idx = prog.getLam
+    val idy = prog.getLam
+    val x: Var[A] = Var(idx)
+    val y: Var[B] = Var(idy)
+    val body: Expr[C] = fun(VarE(x), VarE(y))
+    val expr = Lam2E(x, y, body)
+
+    prog.addExpr(expr)
+  }
+
+  def __newVar[A, B, C, D](fun: (Expr[A], Expr[B], Expr[C]) => Expr[D]): Expr[(A, B, C) => D] = {
+    val id1 = prog.getLam
+    val id2 = prog.getLam
+    val id3 = prog.getLam
+    val x: Var[A] = Var(id1)
+    val y: Var[B] = Var(id2)
+    val z: Var[C] = Var(id3)
+    val body: Expr[D] = fun(VarE(x), VarE(y), VarE(z))
+    val expr = Lam3E(x, y, z, body)
+
+    prog.addExpr(expr)
+  }
+
+
   def infix_+(a: Expr[Int], b: Expr[Int]) = BinOpE(AddB(), a, b)
   def infix_-(a: Expr[Int], b: Expr[Int]) = BinOpE(SubB(), a, b)
   def infix_*(a: Expr[Int], b: Expr[Int]) = BinOpE(MulB(), a, b)

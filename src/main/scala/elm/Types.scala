@@ -19,10 +19,16 @@ case class StringE(s: String) extends Expr[String]
 case class VarE[A](v: Var[A]) extends Expr[A]
 case class Lam1E[A, B](v: Var[A], e: Expr[B])
     extends Expr[A => B]
+case class Lam2E[A, B, C](v1: Var[A], v2: Var[B], e: Expr[C])
+    extends Expr[(A, B) => C]
+case class Lam3E[A, B, C, D](v1: Var[A], v2: Var[B], v3: Var[C], e: Expr[D])
+    extends Expr[(A, B, C) => D]
 case class App1E[A, B](e1: Expr[A => B], e2: Expr[A])
     extends Expr[B]
 case class App2E[A, B, C](e1: Expr[(A, B) => C], e2: Expr[A],
                           e3: Expr[B]) extends Expr[C]
+case class App3E[A, B, C, D](f: Expr[(A, B, C) => D], e1: Expr[A],
+                          e2: Expr[B], e3: Expr[C]) extends Expr[D]
 case class BinOpE(op: BinOp, e1: Expr[Int], e2: Expr[Int])
     extends Expr[Int]
 case class BuiltInE[A](v: Var[A]) extends Expr[A]

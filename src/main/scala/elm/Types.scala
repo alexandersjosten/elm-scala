@@ -44,8 +44,11 @@ object Expr {
     case StringE(s) => JsStr(s)
     case VarE(Var(n)) => JsName(n)
     case Lam1E(v, e) => JsAnonymousFunction(List(v), JsReturn(Some(e)))
+    case Lam2E(v1, v2, e) => JsAnonymousFunction(List(v1,v2), JsReturn(Some(e)))
+    case Lam3E(v1, v2, v3, e) => JsAnonymousFunction(List(v1,v2,v3), JsReturn(Some(e)))
     case App1E(f, e) => JsFunctionCall(f, e)
     case App2E(f, e1, e2) => appExpr(f, e1, e2)
+    case App3E(f, e1, e2, e3) => appExpr(f, e1, e2, e3)
     case BinOpE(op, e1, e2) => JsBinOp(e1, op, e2)
     case BuiltInE(v) => v
     case Tup2E(e1, e2) => tupExpr(e1, e2)

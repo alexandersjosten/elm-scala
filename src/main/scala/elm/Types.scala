@@ -78,6 +78,8 @@ object Expr {
     JsFunctionCall("A" + es.size, args:_*)
   }
 
+  implicit def expToFunc3[A,B,C,D](f: Expr[(A,B,C) => D]): Func3[A, B, C, D] = Func3(f)
+
   implicit def expToFunc2[A,B,C](f: Expr[(A,B) => C]): Func2[A, B, C] = Func2(f)
 
   implicit def expToFunc1[A,B](f: Expr[A => B]): Func1[A, B] = Func1(f)
@@ -89,6 +91,10 @@ sealed case class Func1[A, B](expr: Expr[A => B]) {
 
 sealed case class Func2[A, B, C](expr: Expr[(A, B) => C]) {
   def apply(a: Expr[A], b: Expr[B]): Expr[C] = App2E(expr, a, b)
+}
+
+sealed case class Func3[A, B, C, D](expr: Expr[(A, B, C) => D]) {
+  def apply(a: Expr[A], b: Expr[B], c: Expr[C]): Expr[D] = App3E(expr, a, b, c)
 }
 
 // Binary operators for type Expr

@@ -18,7 +18,24 @@ object Main {
       var main = lift(resizeableYogi, edgeLength)
     }
 
-    val progStr = Example2.prog.emit
+    object Example3 extends Elm {
+      import Color._
+
+      var hand = (clr: Expr[Color], len: Expr[Int], time: Expr[Int]) => {
+        val angle = degrees(90 - 6 * inSeconds(time))
+        traced(solid(clr), segment((0,0), (len*cos(angle), len*sin(angle))))
+      }
+
+      var x: Expr[List[Int]] = List[Int](1, 2, 3)
+      var f = (t: Expr[Int]) => collage(400, 400, List( filled(lightGrey, ngon(12, 110))
+                                                      , outlined(solid(grey), ngon(12, 110))
+                                                      , hand(orange, 100, t)
+                                                      , hand(charcoal, 100, t/60)
+                                                      , hand(charcoal, 60, t/720)))
+      var y = lift(f, every(second))
+    }
+
+    val progStr = Example3.prog.emit
 
     printToFile(new File("target/elmtest.html"))(_.println(progStr))
     println(progStr)

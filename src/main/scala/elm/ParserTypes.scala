@@ -1,18 +1,7 @@
 package elm
 
 sealed abstract class ParserType {
-  def stringVal(pt: ParserType): String = {
-    pt match {
-      case Fun(ts)       =>
-        var str: String = "Expr["
-        if(ts.length > 2) str += "("
-        str += ts.init.mkString(",")
-        if(ts.length > 2) str += ")"
-        str += " => " + ts.last.toString + "]"
-        str
-      case other         => stringValAux(other)
-    }
-  }
+  def stringVal(pt: ParserType): String = "Expr[" + stringValAux(pt) + "]"
 
   def stringValAux(pt: ParserType): String = {
     pt match {
@@ -25,8 +14,14 @@ sealed abstract class ParserType {
           s.capitalize
         }
       case TupleType(ts) => "(" + ts.mkString(",") + ")"
-      case Fun(ts)       =>
-        "(" + ts.mkString(" => ") + ")"
+      case Fun(ts)       => {
+        var str = ""
+        if(ts.length > 2) str += "("
+        str += ts.init.mkString(",")
+        if(ts.length > 2) str += ")"
+        str += " => " + ts.last.toString
+        str
+      }
       case App(l, r)     => l.toString + "[" + r.toString + "]"
     }
   }

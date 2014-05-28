@@ -12,10 +12,10 @@ object ElmParser extends RegexParsers {
   val typeIdent: Parser[String] = "[A-Za-z0-9_]+".r
   val moduleIdent: Parser[Name] = rep1sep("[A-Z][A-Za-z0-9.]*".r, ".") ^^ (_ mkString ".")
   val moduleName: Parser[Name]  =
-    lexeme("module") ~> lexeme(moduleIdent) <~ lexeme("where") <~ "\n"
+    lexeme("module") ~> lexeme(moduleIdent) <~ lexeme("where") <~ emptyLines
   val importStmt: Parser[Import] = {
     val stmt = lexeme(moduleIdent) ^^ (n => Import(n, List()))
-    lexeme("import") ~> stmt <~ lexeme("\n")
+    lexeme("import( )+(open)?".r) ~> stmt <~ lexeme("[^\n]*\n".r)
   }
 
   /* functionHeader will parse the name of the function and create the type of
@@ -51,7 +51,7 @@ object ElmParser extends RegexParsers {
       case ~(v, Fun(ts)) => Fun(v :: ts)
       case ~(v, ts)      => Fun(v, ts)
     }
-    
+
     fun | parenType | app | singleVar
   }
   val functionBody: Parser[Unit] = {
@@ -59,28 +59,39 @@ object ElmParser extends RegexParsers {
     firstLine ~> rep(guard("[ \t]".r) ~> "[^\n]*[\n]".r) ~> success(Unit)
   }
   val function: Parser[FunDef[ParserType]] =
-    functionHeader <~ "\n" <~ functionBody
+    functionHeader <~ "\n" <~ functionBody <~ emptyLines
 
   // parses the comments, both multiline and single line comments
   val comments: Parser[Unit] = {
-    lazy val f: Parser[Unit] = { ("-}" | "(?s).".r ~> f) ~> success(Unit) }
+    val f: Parser[Unit] = "([^-]|-[^}])*-}".r ~> success(Unit)
 
     val mc: Parser[Unit] = "{-" ~> f ~> success(Unit)
     val sc: Parser[Unit] = "--[^\n]*".r ~> success(Unit)
 
-    rep (sc | mc) >> {
-      case Nil    => "[\n]*".r ~> success(Unit)
-      case _ :: _ => "[\n]+".r ~> success(Unit)
+    repsep(sc | mc, emptyLines) >> {
+      case Nil    => "[\n]*".r ~> emptyLines ~> success(Unit)
+      case _ :: _ => "[\n]+".r ~> emptyLines ~> success(Unit)
     }
   }
+
+  val data: Parser[DataS] =
+    lexeme("data") ~> ("[A-Z][A-Za-z0-9_-]*".r ^^ DataS) <~ "[^\n]*\n".r ~ emptyLines
+
+  val statement: Parser[Statement] = { // Option[FunDef[ParserType]]] = {
+    val fun = function ^^ (FunS(_))
+
+    fun | data
+  }
+
+  val emptyLines: Parser[Unit] = rep("[ \t]*\n".r) ~> success(Unit)
 
   // parser the module, uses functions above
   val elmModule: Parser[ElmModule] = {
     val commentModule = comments ~> moduleName
-    val commentImport = comments ~> repsep(importStmt, comments)
-    val commentFunction = comments ~> repsep(function, comments)
-    
-    (commentModule ~ commentImport ~ commentFunction) <~ EOF ^^ {
+    val commentImport = comments ~> repsep(importStmt, comments) <~ emptyLines
+    val commentFunction = comments ~> repsep(statement, comments) <~ emptyLines
+
+    (commentModule ~ commentImport ~ commentFunction) ^^ {
       case ~(~(name, imports), funs) => ElmModule(name, imports, funs)
     }
   }
@@ -92,8 +103,11 @@ object ElmParser extends RegexParsers {
 
   type Name = String
 
+  sealed class Statement
+  case class FunS(fun: FunDef[ParserType]) extends Statement
+  case class DataS(name: String) extends Statement
   sealed case class Import(s: Name, fns: List[Name])
   sealed case class FunDef[+T](s: Name, ty: ParserType)
   sealed case class ElmModule(name: Name, imports: List[Import],
-                              functions: List[FunDef[ParserType]])
+                              stmts: List[Statement])
 }

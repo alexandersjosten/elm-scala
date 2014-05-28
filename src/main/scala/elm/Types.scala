@@ -36,6 +36,8 @@ case class Tup2E[A, B](e1: Expr[A], e2: Expr[B])
     extends Expr[(A, B)]
 case class Tup3E[A, B, C](e1: Expr[A], e2: Expr[B], e3: Expr[C])
     extends Expr[(A, B, C)]
+case class ListE[A](e1: List[Expr[A]])
+    extends Expr[List[A]]
 
 object Expr {
   implicit def toJs(e: Expr[Any]): JsExpr = e match {
@@ -52,6 +54,7 @@ object Expr {
     case BinOpE(op, e1, e2) => JsBinOp(e1, op, e2)
     case BuiltInE(v) => v
     case Tup2E(e1, e2) => tupExpr(e1, e2)
+    case ListE(ls) => JsFunctionCall(JsName("_J.toList"), JsArray(ls map toJs))
     case x => JsName(x.toString)
   }
 

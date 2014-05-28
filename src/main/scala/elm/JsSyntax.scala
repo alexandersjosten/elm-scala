@@ -80,6 +80,7 @@ object JsExpr {
   implicit def exprToStmt(e: JsExpr) = JsExprS(e)
 }
 
+case class JsArray(elems: List[JsExpr]) extends JsExpr
 case class JsAssignment(lhs: JsExpr, rhs: JsExpr) extends JsExpr
 case class JsName(name: String) extends JsExpr
 case class JsQualifiedName(qualifier: JsName, name: JsName) extends JsExpr
@@ -129,6 +130,7 @@ object JsPrettyPrinter {
   }
 
   def prettyExpr(js: JsExpr): String = js match {
+    case JsArray(ls) => "[" + ls.map(prettyExpr).mkString(",") + "]"
     case JsAssignment(el, er) => prettyExpr(el) + " = " + prettyExpr(er)
     case JsName(s) => s
     case JsQualifiedName(q: JsName, name: JsName) => prettyExpr(q) + "." + prettyExpr(name)

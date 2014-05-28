@@ -46,8 +46,8 @@ object Expr {
     case StringE(s) => JsStr(s)
     case VarE(Var(n)) => JsName(n)
     case Lam1E(v, e) => JsAnonymousFunction(List(v), JsReturn(Some(e)))
-    case Lam2E(v1, v2, e) => JsAnonymousFunction(List(v1,v2), JsReturn(Some(e)))
-    case Lam3E(v1, v2, v3, e) => JsAnonymousFunction(List(v1,v2,v3), JsReturn(Some(e)))
+    case Lam2E(v1, v2, e) => funExpr(e, v1, v2)
+    case Lam3E(v1, v2, v3, e) => funExpr(e, v1, v2, v3)
     case App1E(f, e) => JsFunctionCall(f, e)
     case App2E(f, e1, e2) => appExpr(f, e1, e2)
     case App3E(f, e1, e2, e3) => appExpr(f, e1, e2, e3)
@@ -56,6 +56,16 @@ object Expr {
     case Tup2E(e1, e2) => tupExpr(e1, e2)
     case ListE(ls) => JsFunctionCall(JsName("_J.toList"), JsArray(ls map toJs))
     case x => JsName(x.toString)
+  }
+
+  private def funExpr(body: Expr[Any], args: Var[Any]*) = {
+    import scala.collection.mutable.ListBuffer
+
+    val fun = JsName("F" + args.size)
+    val args_ = args map { x => JsName(x.name) }
+    val body_ = new JsReturn(JsFunctionCall(JsAnonymousFunction(List(), new JsReturn(body.toJs))))
+
+    JsFunctionCall(fun, JsAnonymousFunction(args_.toList, body_))
   }
 
   private def tupExpr(es: Expr[Any]*) = {

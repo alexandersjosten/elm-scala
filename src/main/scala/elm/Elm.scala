@@ -107,7 +107,8 @@ class Elm {
   implicit def unitToExp(e: Unit): Expr[Unit] = UnitE()
   implicit def intToExp(i: Int): Expr[Int] = NumE(i)
   implicit def stringToExp(s: String): Expr[String] = StringE(s)
-  implicit def listToExp[A](ls: List[A])
+  implicit def listToExp1[A](ls: List[Expr[A]]): Expr[List[A]] = ListE(ls)
+  implicit def listToExp2[A](ls: List[A])
     (implicit fa: A => Expr[A])
       : Expr[List[A]] = ListE(ls map fa)
 

@@ -5,24 +5,31 @@ import ElmParser._
 object ParseElmModule {
   def parseModule(em: ElmModule): String = {
     var retStr: String = "package elm\n\n"
-    retStr += "object " + em.name + " {\n"
-    em.functions.foreach({(fd: FunDef[ParserType]) =>
-      retStr += "  def " + fd.s
-      val variables = findVars(fd.ty)
+    var funStr = ""
 
-      if(variables.isEmpty) {
-        retStr += ": "
+    em.stmts.foreach( {
+      case FunS(fd) => {
+        funStr += "  def " + fd.s
+        val variables = findVars(fd.ty)
+
+        if(variables.isEmpty) {
+          funStr += ": "
+        }
+        else {
+          funStr += "["
+          variables.foreach((v: String) => funStr += v + ",")
+          funStr = funStr.dropRight(1) + "]: "
+        }
+
+        funStr += fd.ty.stringVal(fd.ty)
+        funStr += " =\n    BuiltInE(Var(\"" + em.name + "." + fd.s + "\"))\n\n"
       }
-      else {
-        retStr += "["
-        variables.foreach((v: String) => retStr += v + ",")
-        retStr = retStr.dropRight(1) + "]: "
-      }
-      
-      retStr += fd.ty.stringVal(fd.ty)
-      retStr += " =\n    BuiltInE(Var(\"" + em.name + "." + fd.s + "\"))\n\n"
+      case DataS(n) => retStr += "class " + n + "\n"
     })
-    retStr += "}\n"
+
+    retStr += "object " + em.name + " {\n"
+
+    retStr += funStr + "}\n"
     retStr
   }
 
@@ -43,4 +50,3 @@ object ParseElmModule {
     set
   }
 }
-

@@ -21,7 +21,7 @@ object CreateLib {
 
     val file = io.Source.fromFile(inputName).mkString
     ElmParser.parseElm(file) match {
-      case NoSuccess(msg, _) => println(msg)
+      case NoSuccess(msg, reader) => println("Parse error on: " + reader.pos + "\n" + msg)
       case Success(s,_)      =>
         printToFile(new File(outputName))(_.println(parseModule(s)))
     }

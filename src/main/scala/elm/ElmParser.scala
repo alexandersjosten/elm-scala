@@ -75,7 +75,7 @@ object ElmParser extends RegexParsers {
   }
 
   val data: Parser[DataS] =
-    lexeme("data") ~> ("[A-Z][A-Za-z0-9_-]*".r ^^ DataS) <~ "[^\n]*\n".r ~ emptyLines
+    lexeme("data") ~> ("[A-Z][A-Za-z0-9_-]*".r ^^ DataS) <~ ("[^\n]*\n".r <~ rep(guard("[ \t=|]".r) ~> "[^\n]*\n".r)) ~ emptyLines
 
   val statement: Parser[Statement] = { // Option[FunDef[ParserType]]] = {
     val fun = function ^^ (FunS(_))
@@ -111,3 +111,9 @@ object ElmParser extends RegexParsers {
   sealed case class ElmModule(name: Name, imports: List[Import],
                               stmts: List[Statement])
 }
+
+/*
+Left to parse:
+ toHsl : Color -> { hue:Float, saturation:Float, lightness:Float, alpha:Float }
+ hslToRgb : Float -> Float -> Float -> (Float,Float,Float)
+ */
